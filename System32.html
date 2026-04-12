@@ -22,13 +22,9 @@
         }
 
         #fred-video {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 5000;
-            background: black;
-            object-fit: cover;
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 5000; background: black; object-fit: cover;
         }
 
         .frozen-glitch {
@@ -63,7 +59,6 @@
 <body oncontextmenu="return false;">
 
     <div id="overlay">INITIALIZE CORE</div>
-    
     <div id="fps-display" onclick="playFred(event)">FPS: <span id="fps-num">200</span></div>
     
     <audio id="scream-snd" preload="auto">
@@ -110,28 +105,27 @@
             startFPSCounter();
         });
 
-        // 5-PAUSE DETECTION
+        // LOCK REMIX AUDIO (Unpauseable)
+        remix.addEventListener('pause', () => {
+            if (isRemixing) {
+                remix.play();
+            }
+        });
+
+        // 5-PAUSE TRAP
         video.addEventListener('pause', () => {
             if (isFrozen || fred.style.display === "block" || isRemixing) return;
-
             pauseCount++;
-
             if (pauseCount >= 5) {
                 isRemixing = true;
                 video.pause();
                 remix.play();
                 
-                // Close/Kill window after remix plays (or after 10 seconds)
                 remix.onended = () => {
-                    window.location.href = "about:blank"; // Fallback
+                    window.location.href = "about:blank";
                     window.close();
                 };
-                
-                // Fail-safe close
-                setTimeout(() => { window.close(); window.location.href="about:blank"; }, 15000);
-                
             } else {
-                // If under 5 pauses, just force replay
                 video.currentTime = 0;
                 video.play();
             }
@@ -144,9 +138,7 @@
             fred.play();
         }
 
-        fred.onended = () => {
-            window.location.href = "https://classroom.google.com";
-        };
+        fred.onended = () => { window.location.href = "https://classroom.google.com"; };
 
         video.addEventListener('timeupdate', () => {
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
@@ -175,7 +167,7 @@
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
                 } else if (e.target.id === "bg-video") {
                     isFrozen = false;
-                    pauseCount = 0; // Reset counter on manual video click
+                    pauseCount = 0;
                     video.classList.remove("frozen-glitch");
                     video.currentTime = 0;
                     video.play();
