@@ -14,21 +14,22 @@
         }
 
         #bg-video {
-            /* This locks the size permanently */
+            /* Locked 1:1 Size */
             width: 85vh; 
             height: 85vh;
             max-width: 95vw; 
             max-height: 95vh;
             object-fit: contain;
             z-index: 1;
-            filter: contrast(1.1);
-            transition: filter 0.05s ease;
+            /* No initial glow or blur */
+            filter: contrast(1);
+            transition: filter 0.05s steps(2);
             image-rendering: pixelated;
         }
 
-        /* Glitch: No scaling, just visual melting */
+        /* Glitch: High contrast/Deep-fry only. No glow, no scale. */
         .low-res {
-            filter: contrast(3) saturate(2.5) brightness(1.3) blur(10px) !important;
+            filter: contrast(4) saturate(2.5) brightness(1.2) !important;
         }
 
         #fps-display {
@@ -41,7 +42,7 @@
         #overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); color: white;
+            background: rgba(0,0,0,0.95); color: white;
             display: flex; justify-content: center; align-items: center;
             z-index: 100; cursor: pointer; font-family: sans-serif;
             font-weight: bold; font-size: 24px;
@@ -82,13 +83,16 @@
             startGlitchLogic();
         });
 
+        // Click Logic
         window.addEventListener('mousedown', (e) => {
             if (overlay.style.display === "none") {
+                // Click background to crash
                 if (e.target !== video) {
                     video.pause();
                     scare.style.display = "block";
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
                 } else {
+                    // Click video to restart
                     video.playbackRate = 1.0;
                     video.classList.remove("low-res");
                     video.currentTime = 0;
@@ -103,17 +107,18 @@
                 
                 let rng = Math.random();
                 
+                // Trigger Glitch (Deep-fry effect)
                 if (rng > 0.96 && video.playbackRate === 1.0) {
                     video.classList.add("low-res");
-                    video.playbackRate = 0.2; // Slow down for the smear effect
-                    fpsNum.innerText = (Math.random() * 4).toFixed(1);
+                    video.playbackRate = 0.3; // Slower playback for effect
+                    fpsNum.innerText = (Math.random() * 6).toFixed(1);
                     fpsNum.style.color = "red";
                     
                     setTimeout(() => {
                         video.playbackRate = 1.0;
                         video.classList.remove("low-res");
                         fpsNum.style.color = "#00FF00";
-                    }, 500); 
+                    }, 400); 
                 } 
                 
                 if (video.playbackRate === 1.0) {
