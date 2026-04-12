@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>invincrash</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: black;
+            user-select: none;
+        }
+
+        #darkness-trap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 0;
+        }
+
+        /* FORCE BOTH VIDEOS TO OVERLAP NO MATTER WHAT */
+        .glitch-outer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        video {
+            position: absolute; /* Lock them to the same starting point */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Keeps the aspect ratio centered */
+            image-rendering: pixelated;
+        }
+
+        #ghost-video {
+            display: none;
+            opacity: 0.7;
+            mix-blend-mode: color-dodge; /* The 0:09 smear effect */
+            pointer-events: none;
+        }
+
+        /* The 144p Smash */
+        .datamosh-mode {
+            filter: contrast(1.8) saturate(1.5) brightness(1.1) !important;
+            transform: scale(0.20); 
+        }
+
+        #scare-layer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 9999;
+        }
+
+        #scare-layer img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+
+        #fps-display {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #00FF00;
+            font-family: monospace;
+            font-size: 18px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px;
+            pointer-events: none;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+            font-size: 24px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="darkness-trap" onmousedown="triggerCrash()"></div>
+
+    <div id="scare-layer">
+        <img src="jumpscare.jpg" alt="SYSTEM_CRASH">
+    </div>
+
+    <div id="overlay" onclick="startExperience()">CLICK TO START</div>
+    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+
+    <div class="glitch-outer" id="v-cont">
+        <video id="bg-video" loop playsinline disablePictureInPicture>
+            <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+        </video>
+        <video id="ghost-video" loop playsinline muted disablePictureInPicture></video>
+    </div>
+
+    <script>
+        const video = document.getElementById("bg-video");
+        const ghost = document.getElementById("ghost-video");
+        const vCont = document.getElementById("v-cont");
+        const overlay = document.getElementById("overlay");
+        const scareLayer = document.getElementById("scare-layer");
+        const fpsNum = document.
