@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>invincrash</title> <style>
+    <title>invincrash</title>
+    <style>
         body, html {
             margin: 0;
             padding: 0;
@@ -25,13 +26,27 @@
             z-index: 1;
             filter: blur(1px) contrast(1.1);
             pointer-events: none; 
-            transition: filter 0.1s ease;
         }
 
-        /* 144p Crunch Effect */
         .low-res {
             filter: blur(8px) contrast(1.4) brightness(1.1) !important;
             image-rendering: pixelated;
+        }
+
+        /* The "System Error" Jumpscare Overlay */
+        #error-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: blue; /* Old school Blue Screen of Death vibe */
+            color: white;
+            font-family: monospace;
+            padding: 50px;
+            z-index: 1000;
+            font-size: 20px;
         }
 
         #fps-display {
@@ -67,6 +82,12 @@
 </head>
 <body oncontextmenu="return false;">
 
+    <div id="error-overlay">
+        SYSTEM_ERROR: MEMORY_DUMP_FAILURE<br><br>
+        A critical error has occurred and the process must be terminated.<br>
+        Redirecting to safe zone...
+    </div>
+
     <div id="overlay">CLICK TO START</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
@@ -77,6 +98,7 @@
     <script>
         const video = document.getElementById("bg-video");
         const overlay = document.getElementById("overlay");
+        const errorOverlay = document.getElementById("error-overlay");
         const fpsNum = document.getElementById("fps-num");
 
         overlay.addEventListener('click', () => {
@@ -86,21 +108,35 @@
             startGlitchLogic();
         });
 
-        // Instant Replay on Left/Right Click
+        // DETECT CLICK IN DARKNESS
         window.addEventListener('mousedown', (e) => {
             if (overlay.style.display === "none") {
-                video.playbackRate = 1.0;
-                video.classList.remove("low-res");
-                video.currentTime = 0;
-                video.play();
+                // If they click the black background (not the video)
+                if (e.target.tagName === "BODY" || e.target.tagName === "HTML") {
+                    triggerCrash();
+                } else {
+                    // Normal Replay logic
+                    video.playbackRate = 1.0;
+                    video.classList.remove("low-res");
+                    video.currentTime = 0;
+                    video.play();
+                }
             }
         });
+
+        function triggerCrash() {
+            video.pause();
+            errorOverlay.style.display = "block";
+            
+            // After 1.5 seconds of the "Error Screen", send them to Google
+            setTimeout(() => {
+                window.location.href = "https://www.google.com";
+            }, 1500);
+        }
 
         function startGlitchLogic() {
             setInterval(() => {
                 let rng = Math.random();
-                
-                // Random 144p / Freeze / Speed-up logic
                 if (rng > 0.96 && video.playbackRate === 1.0) {
                     video.classList.add("low-res");
                     video.playbackRate = 0; 
@@ -117,7 +153,6 @@
                             video.classList.remove("low-res");
                             fpsNum.style.color = "#00FF00";
                         }, 300); 
-                        
                     }, Math.random() * 600 + 200); 
                 } 
                 
