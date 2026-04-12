@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glitch Loop</title>
+    <title>Locked Glitch Loop</title>
     <style>
         body, html {
             margin: 0;
@@ -15,17 +15,19 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Prevents text selection highlighting */
+            user-select: none; 
         }
 
         #bg-video {
-            /* Fixes the oversized issue */
             max-width: 100%;
             max-height: 100%;
             width: auto;
             height: auto;
             z-index: 1;
-            /* 360p effect */
             filter: blur(1px) contrast(1.1) brightness(0.9);
+            /* Makes the video "invisible" to mouse clicks so controls won't show */
+            pointer-events: none; 
         }
 
         #fps-display {
@@ -59,12 +61,10 @@
         }
     </style>
 </head>
-<body>
-
-    <div id="overlay">CLICK TO START</div>
+<body oncontextmenu="return false;"> <div id="overlay">CLICK TO START</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
-    <video id="bg-video" loop playsinline>
+    <video id="bg-video" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate">
         <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
     </video>
 
@@ -73,31 +73,44 @@
         const overlay = document.getElementById("overlay");
         const fpsNum = document.getElementById("fps-num");
 
-        overlay.addEventListener('click', () => {
+        overlay.addEventListener('click', (e) => {
             video.muted = false;
             video.play();
             overlay.style.display = "none";
             startGlitchLogic();
         });
 
+        // REPLAY ON ANY CLICK (Left or Right)
+        // Since pointer-events are disabled on the video, we listen to the 'window'
+        window.addEventListener('mousedown', (e) => {
+            if (overlay.style.display === "none") {
+                video.currentTime = 0;
+                video.play();
+            }
+        });
+
+        // Double-down on blocking the right-click menu
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
         function startGlitchLogic() {
-            // Main loop for FPS and Freezing
             setInterval(() => {
-                let isFreezing = Math.random() > 0.96; // 4% chance to freeze every 100ms
+                let isFreezing = Math.random() > 0.96; 
                 
                 if (isFreezing) {
                     video.pause();
                     fpsNum.innerText = "0";
                     fpsNum.style.color = "red";
                     
-                    // Stay frozen for a random short time (100ms to 500ms)
                     setTimeout(() => {
-                        video.play();
+                        if (overlay.style.display === "none") {
+                            video.play();
+                        }
                         fpsNum.style.color = "#00FF00";
                     }, Math.random() * 400 + 100);
                     
                 } else {
-                    // Normal FPS jitter
                     let val = Math.floor(Math.random() * (205 - 190 + 1)) + 190;
                     fpsNum.innerText = val;
                 }
