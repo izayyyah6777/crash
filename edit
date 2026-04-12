@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High-Speed 360p Loop</title>
+    <style>
+        /* Basic page setup */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        /* The Video Styling */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            
+            /* The 360p Low-Res Trick */
+            filter: blur(1.2px) contrast(1.1) brightness(0.95);
+        }
+
+        /* The Fake FPS Counter */
+        #fps-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00FF00; /* Hacker Green */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border: 1px solid #333;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fps-box">
+        FPS: <span id="fps-count">200</span>
+    </div>
+
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        const fpsElement = document.getElementById("fps-count");
+        
+        // This script makes the FPS number look real by jittering
+        setInterval(() => {
+            // Randomly stay near 200
+            let fps = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+            
+            // 2% chance to "drop" to make it look like it's freezing
+            if (Math.random() > 0.98) {
+                fps = Math.floor(Math.random() * 5); 
+                fpsElement.style.color = "red";
+            } else {
+                fpsElement.style.color = "#00FF00";
+            }
+            
+            fpsElement.innerText = fps;
+        }, 80); // Updates very fast
+    </script>
+
+</body>
+</html>
