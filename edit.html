@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Loop</title>
+    <title>Glitch Loop</title>
     <style>
         body, html {
             margin: 0;
@@ -18,17 +18,16 @@
         }
 
         #bg-video {
-            /* Fixes the "oversized" issue: fits perfectly inside the screen */
+            /* Fixes the oversized issue */
             max-width: 100%;
             max-height: 100%;
             width: auto;
             height: auto;
             z-index: 1;
-            /* 360p vibe */
-            filter: blur(1px) contrast(1.1);
+            /* 360p effect */
+            filter: blur(1px) contrast(1.1) brightness(0.9);
         }
 
-        /* Fake FPS */
         #fps-display {
             position: absolute;
             top: 15px;
@@ -39,9 +38,9 @@
             z-index: 10;
             background: rgba(0, 0, 0, 0.7);
             padding: 5px;
+            pointer-events: none;
         }
 
-        /* The Overlay to force Audio */
         #overlay {
             position: fixed;
             top: 0;
@@ -57,7 +56,6 @@
             cursor: pointer;
             font-family: sans-serif;
             font-weight: bold;
-            font-size: 24px;
         }
     </style>
 </head>
@@ -75,20 +73,36 @@
         const overlay = document.getElementById("overlay");
         const fpsNum = document.getElementById("fps-num");
 
-        // When they click the "Start" screen, it forces the video to play with audio
         overlay.addEventListener('click', () => {
             video.muted = false;
             video.play();
             overlay.style.display = "none";
+            startGlitchLogic();
         });
 
-        // Fake FPS jitter
-        setInterval(() => {
-            let val = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
-            if (Math.random() > 0.99) { val = 0; fpsNum.style.color = "red"; } 
-            else { fpsNum.style.color = "#00FF00"; }
-            fpsNum.innerText = val;
-        }, 100);
+        function startGlitchLogic() {
+            // Main loop for FPS and Freezing
+            setInterval(() => {
+                let isFreezing = Math.random() > 0.96; // 4% chance to freeze every 100ms
+                
+                if (isFreezing) {
+                    video.pause();
+                    fpsNum.innerText = "0";
+                    fpsNum.style.color = "red";
+                    
+                    // Stay frozen for a random short time (100ms to 500ms)
+                    setTimeout(() => {
+                        video.play();
+                        fpsNum.style.color = "#00FF00";
+                    }, Math.random() * 400 + 100);
+                    
+                } else {
+                    // Normal FPS jitter
+                    let val = Math.floor(Math.random() * (205 - 190 + 1)) + 190;
+                    fpsNum.innerText = val;
+                }
+            }, 100);
+        }
     </script>
 
 </body>
