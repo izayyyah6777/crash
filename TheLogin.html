@@ -5,138 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign in - Google Accounts</title>
     <style>
-        /* Forces the screenshot to be the full background */
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
         }
 
-        #wrapper {
-            width: 100vw;
-            height: 100vh;
+        #container {
+            width: 100vw; height: 100vh;
             background-image: url('Screenshot 2026-04-12 2.48.41 AM.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Invisible typing area over the blue box */
+        /* INVISIBLE INPUT: Positioned over the blue-outlined box */
         #real-input {
             position: absolute;
-            top: 53.5%; 
-            left: 46%; 
-            width: 480px; 
-            height: 60px;
+            top: 48%; /* Adjust slightly if the cursor isn't in the blue box */
+            left: 50%;
+            width: 450px; 
+            height: 65px;
             background: transparent;
             border: none;
             color: white;
-            font-size: 22px;
+            font-size: 20px;
             outline: none;
             z-index: 10;
         }
 
-        /* Invisible "Next" button hitbox */
-        #fake-next {
-            position: absolute;
-            bottom: 30%; 
-            right: 5%;
-            width: 120px;
-            height: 55px;
-            background: rgba(0, 0, 0, 0); 
-            cursor: pointer;
-            z-index: 20;
-        }
-
-        /* Invisible "Logo" hitbox for Fredbear */
+        /* INVISIBLE LOGO TRIGGER: Over the 'G' logo */
         #logo-trigger {
             position: absolute;
             top: 8%;
             left: 2%;
-            width: 100px;
-            height: 100px;
-            background: rgba(0, 0, 0, 0);
+            width: 80px;
+            height: 80px;
             cursor: pointer;
             z-index: 20;
         }
 
-        /* Scare Overlays */
-        #scare-layer, #video-layer {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 9999;
+        /* INVISIBLE NEXT BUTTON: Since it's not in the photo, 
+           we place it where it usually is (bottom right) */
+        #fake-next {
+            position: absolute;
+            bottom: 25%;
+            right: 15%;
+            width: 100px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 20;
         }
 
-        #scare-layer img, #video-layer video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        #overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
         }
+        #overlay img, #overlay video { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
 
-    <div id="wrapper">
-        <input type="password" id="real-input" autocomplete="off">
-        <div id="fake-next" onclick="checkPass()"></div>
-        <div id="logo-trigger" onclick="triggerFredbear()"></div>
-    </div>
+<div id="container">
+    <input type="password" id="real-input" autocomplete="off" autofocus>
+    <div id="logo-trigger" onclick="triggerFredbear()"></div>
+    <div id="fake-next" onclick="checkPass()"></div>
+</div>
 
-    <div id="scare-layer"><img src="scary.png"></div>
-
-    <div id="video-layer">
-        <video id="fredbear-vid">
-            <source src="FREDBEARDOMER.mp4" type="video/mp4">
-        </video>
-    </div>
-
-    <audio id="scream-snd"><source src="ElevenLabs_Sudden_loud_scream_in_a_dark_hallway,_terrifying_jumpscare.mp3" type="audio/mpeg"></audio>
-    <audio id="remix-snd"><source src="gemi2_remix.mp3" type="audio/mpeg"></audio>
-
-    <script>
-        const input = document.getElementById("real-input");
-        const scream = document.getElementById("scream-snd");
-        const remix = document.getElementById("remix-snd");
-        const fredbearVid = document.getElementById("fredbear-vid");
-        
-        const CLASSROOM = "https://classroom.google.com";
-        const MATH = "https://gn-math.dev";
-        const GAMES = "https://www.google.com/search?q=unblocked+games+76+premium+free+bypass+school+filter";
-
-        let active = false;
-
-        function checkPass() {
-            if (active) return;
-            if (input.value === "ssap") {
-                runScare();
-            } else {
-                runRemix();
-            }
-        }
-
-        function triggerFredbear() {
-            if (active) return;
-            active = true;
-            document.getElementById("video-layer").style.display = "block";
-            fredbearVid.play();
-            fredbearVid.onended = () => { window.location.href = CLASSROOM; };
-        }
-
-        function runScare() {
-            active = true;
-            document.getElementById("scare-layer").style.display = "block";
-            scream.play();
-            setTimeout(() => { window.location.href = GAMES; }, 2000);
-        }
-
-        function runRemix() {
-            active = true;
-            remix.play();
-            remix.onended = () => {
+<div id="overlay">
+    <img id="scare-img" src="scary.png" style="display:none;">
+    <video id="fred-vid"><source src="FRE
