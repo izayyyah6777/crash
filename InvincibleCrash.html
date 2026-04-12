@@ -21,7 +21,6 @@
             image-rendering: pixelated;
         }
 
-        /* 0:09 Deep-Fry glitch */
         .frozen-glitch {
             filter: contrast(5) saturate(3.5) brightness(1.2) !important;
         }
@@ -42,21 +41,27 @@
             font-weight: bold; font-size: 24px;
         }
 
+        /* Speed optimized scare layer */
         #scare-layer {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
+            display: none; 
+            position: fixed;
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: #000; 
+            z-index: 9999;
         }
 
         #scare-layer img { 
             width: 100%; height: 100%; 
-            object-fit: cover; 
+            object-fit: contain; 
+            /* Ensures no flickering when appearing */
+            backface-visibility: hidden;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="overlay">Inivncrash start</div>
+    <div id="overlay">INITIALIZE CORE</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
     
     <audio id="scream-snd" preload="auto">
@@ -84,13 +89,11 @@
         overlay.addEventListener('click', () => {
             video.muted = false;
             video.play();
-            // Load scream on first click so it's ready to fire
-            scream.load(); 
+            scream.load(); // Forces the browser to keep the audio in RAM
             overlay.style.display = "none";
             startFPSCounter();
         });
 
-        // 0:09 Hard Freeze
         video.addEventListener('timeupdate', () => {
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
                 isFrozen = true;
@@ -108,19 +111,18 @@
             video.play();
         }
 
-        // Crash Trigger (Clicking Background)
         window.addEventListener('mousedown', (e) => {
             if (overlay.style.display === "none") {
                 if (e.target !== video) {
+                    // INSTANT TRIGGER LOGIC
+                    scare.style.display = "block"; // Show image first frame
+                    scream.currentTime = 0; // Reset audio to start
+                    scream.play();
                     video.pause();
-                    scream.volume = 1.0;
-                    scream.play().catch(err => console.log("Audio block:", err));
-                    scare.style.display = "block";
                     
-                    // Redirect to google after 1.8s
+                    // Crash redirect
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
                 } else {
-                    // Reset everything if video is clicked
                     isFrozen = false;
                     video.classList.remove("frozen-glitch");
                     video.currentTime = 0;
