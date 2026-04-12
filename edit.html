@@ -3,40 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High-Speed Loop (Audio Forced)</title>
+    <title>Fixed Loop</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #bg-video {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
+            /* Fixes the "oversized" issue: fits perfectly inside the screen */
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
             z-index: 1;
-            transform: translate(-50%, -50%);
-            object-fit: contain; 
+            /* 360p vibe */
             filter: blur(1px) contrast(1.1);
         }
 
-        /* This is an invisible layer that catches the first click to trigger audio */
-        #audio-trigger {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 100;
-            cursor: pointer;
-        }
-
+        /* Fake FPS */
         #fps-display {
             position: absolute;
             top: 15px;
@@ -45,44 +37,56 @@
             font-family: 'Courier New', monospace;
             font-size: 18px;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            pointer-events: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px;
+        }
+
+        /* The Overlay to force Audio */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
 
-    <div id="audio-trigger"></div>
-
+    <div id="overlay">CLICK TO START</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
-    <video id="bg-video" autoplay loop muted playsinline>
+    <video id="bg-video" loop playsinline>
         <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
     </video>
 
     <script>
         const video = document.getElementById("bg-video");
-        const trigger = document.getElementById("audio-trigger");
+        const overlay = document.getElementById("overlay");
         const fpsNum = document.getElementById("fps-num");
 
-        // FORCE AUDIO ON FIRST CLICK
-        trigger.addEventListener('click', () => {
+        // When they click the "Start" screen, it forces the video to play with audio
+        overlay.addEventListener('click', () => {
             video.muted = false;
-            video.volume = 1.0; // Max volume
             video.play();
-            trigger.style.display = "none"; // Remove the layer after it works
+            overlay.style.display = "none";
         });
 
-        // Fake FPS logic
+        // Fake FPS jitter
         setInterval(() => {
-            let val = Math.floor(Math.random() * (202 - 198 + 1)) + 198;
-            if (Math.random() > 0.98) {
-                val = 0;
-                fpsNum.style.color = "red";
-            } else {
-                fpsNum.style.color = "#00FF00";
-            }
+            let val = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+            if (Math.random() > 0.99) { val = 0; fpsNum.style.color = "red"; } 
+            else { fpsNum.style.color = "#00FF00"; }
             fpsNum.innerText = val;
         }, 100);
     </script>
