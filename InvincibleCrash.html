@@ -13,12 +13,19 @@
             user-select: none; 
         }
 
-        #bg-video {
+        #bg-video, #fred-video {
             width: 85vh; height: 85vh;
             max-width: 95vw; max-height: 95vh;
             object-fit: contain;
             z-index: 1;
             image-rendering: pixelated;
+        }
+
+        #fred-video {
+            display: none;
+            position: fixed;
+            z-index: 500;
+            background: black;
         }
 
         .frozen-glitch {
@@ -28,41 +35,36 @@
         #fps-display {
             position: absolute; top: 15px; left: 15px;
             color: #00FF00; font-family: monospace; font-size: 18px;
-            z-index: 10; background: rgba(0, 0, 0, 0.7);
-            padding: 5px; pointer-events: none;
+            z-index: 1000; background: rgba(0, 0, 0, 0.7);
+            padding: 5px; cursor: pointer; /* Makes it look clickable */
+            border: 1px transparent solid;
         }
+
+        #fps-display:hover { border-color: #00FF00; }
 
         #overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); color: white;
             display: flex; justify-content: center; align-items: center;
-            z-index: 100; cursor: pointer; font-family: sans-serif;
+            z-index: 2000; cursor: pointer; font-family: sans-serif;
             font-weight: bold; font-size: 24px;
         }
 
-        /* Speed optimized scare layer */
         #scare-layer {
-            display: none; 
-            position: fixed;
-            top: 0; left: 0; 
-            width: 100%; height: 100%;
-            background: #000; 
-            z-index: 9999;
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
         }
 
-        #scare-layer img { 
-            width: 100%; height: 100%; 
-            object-fit: contain; 
-            /* Ensures no flickering when appearing */
-            backface-visibility: hidden;
-        }
+        #scare-layer img { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div id="overlay">INITIALIZE CORE</div>
-    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+    
+    <div id="fps-display" onclick="playFred(event)">FPS: <span id="fps-num">200</span></div>
     
     <audio id="scream-snd" preload="auto">
         <source src="ElevenLabs_Sudden_loud_scream_in_a_dark_hallway,_terrifying_jumpscare.mp3" type="audio/mpeg">
@@ -76,8 +78,13 @@
         <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
     </video>
 
+    <video id="fred-video" playsinline>
+        <source src="FREDBEARDOMER.mp4" type="video/mp4">
+    </video>
+
     <script>
         const video = document.getElementById("bg-video");
+        const fred = document.getElementById("fred-video");
         const overlay = document.getElementById("overlay");
         const fpsNum = document.getElementById("fps-num");
         const scare = document.getElementById("scare-layer");
@@ -89,10 +96,24 @@
         overlay.addEventListener('click', () => {
             video.muted = false;
             video.play();
-            scream.load(); // Forces the browser to keep the audio in RAM
+            scream.load(); 
+            fred.load();
             overlay.style.display = "none";
             startFPSCounter();
         });
+
+        // The FPS Click Trigger
+        function playFred(e) {
+            e.stopPropagation(); // Prevents the background click/crash from firing
+            video.pause();
+            fred.style.display = "block";
+            fred.play();
+        }
+
+        // When Fred video ends, go to Classroom
+        fred.onended = () => {
+            window.location.href = "https://classroom.google.com";
+        };
 
         video.addEventListener('timeupdate', () => {
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
@@ -112,17 +133,14 @@
         }
 
         window.addEventListener('mousedown', (e) => {
-            if (overlay.style.display === "none") {
-                if (e.target !== video) {
-                    // INSTANT TRIGGER LOGIC
-                    scare.style.display = "block"; // Show image first frame
-                    scream.currentTime = 0; // Reset audio to start
-                    scream.play();
+            if (overlay.style.display === "none" && fred.style.display !== "block") {
+                if (e.target.id !== "bg-video" && e.target.id !== "fps-display" && e.target.id !== "fps-num") {
                     video.pause();
-                    
-                    // Crash redirect
+                    scream.currentTime = 0;
+                    scream.play();
+                    scare.style.display = "block";
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
-                } else {
+                } else if (e.target.id === "bg-video") {
                     isFrozen = false;
                     video.classList.remove("frozen-glitch");
                     video.currentTime = 0;
@@ -133,7 +151,7 @@
 
         function startFPSCounter() {
             setInterval(() => {
-                if (isFrozen) return;
+                if (isFrozen || fred.style.display === "block") return;
                 fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
                 fpsNum.style.color = "#00FF00";
             }, 100);
