@@ -13,7 +13,7 @@
             user-select: none; 
         }
 
-        #bg-video, #fred-video {
+        #bg-video {
             width: 85vh; height: 85vh;
             max-width: 95vw; max-height: 95vh;
             object-fit: contain;
@@ -21,11 +21,16 @@
             image-rendering: pixelated;
         }
 
+        /* Fred video set to fill EVERYTHING */
         #fred-video {
             display: none;
             position: fixed;
-            z-index: 500;
+            top: 0; left: 0;
+            width: 100vw; 
+            height: 100vh;
+            z-index: 5000; /* Above everything */
             background: black;
+            object-fit: cover; /* This makes it fill the whole screen */
         }
 
         .frozen-glitch {
@@ -36,7 +41,7 @@
             position: absolute; top: 15px; left: 15px;
             color: #00FF00; font-family: monospace; font-size: 18px;
             z-index: 1000; background: rgba(0, 0, 0, 0.7);
-            padding: 5px; cursor: pointer; /* Makes it look clickable */
+            padding: 5px; cursor: pointer;
             border: 1px transparent solid;
         }
 
@@ -47,7 +52,7 @@
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.98); color: white;
             display: flex; justify-content: center; align-items: center;
-            z-index: 2000; cursor: pointer; font-family: sans-serif;
+            z-index: 6000; cursor: pointer; font-family: sans-serif;
             font-weight: bold; font-size: 24px;
         }
 
@@ -102,15 +107,13 @@
             startFPSCounter();
         });
 
-        // The FPS Click Trigger
         function playFred(e) {
-            e.stopPropagation(); // Prevents the background click/crash from firing
+            e.stopPropagation();
             video.pause();
             fred.style.display = "block";
             fred.play();
         }
 
-        // When Fred video ends, go to Classroom
         fred.onended = () => {
             window.location.href = "https://classroom.google.com";
         };
