@@ -14,22 +14,20 @@
         }
 
         #bg-video {
-            /* Locked 1:1 Size */
+            /* Hard Locked 1:1 Size */
             width: 85vh; 
             height: 85vh;
             max-width: 95vw; 
             max-height: 95vh;
             object-fit: contain;
             z-index: 1;
-            /* No initial glow or blur */
             filter: contrast(1);
-            transition: filter 0.05s steps(2);
             image-rendering: pixelated;
         }
 
-        /* Glitch: High contrast/Deep-fry only. No glow, no scale. */
+        /* Deep-fry glitch: No glow, no blur, no scaling */
         .low-res {
-            filter: contrast(4) saturate(2.5) brightness(1.2) !important;
+            filter: contrast(4) saturate(2.8) brightness(1.2) !important;
         }
 
         #fps-display {
@@ -83,7 +81,6 @@
             startGlitchLogic();
         });
 
-        // Click Logic
         window.addEventListener('mousedown', (e) => {
             if (overlay.style.display === "none") {
                 // Click background to crash
@@ -92,7 +89,7 @@
                     scare.style.display = "block";
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
                 } else {
-                    // Click video to restart
+                    // Click video to instant restart
                     video.playbackRate = 1.0;
                     video.classList.remove("low-res");
                     video.currentTime = 0;
@@ -103,24 +100,27 @@
 
         function startGlitchLogic() {
             setInterval(() => {
-                if (video.paused) return;
+                // If the video is already frozen by a glitch, don't trigger another one
+                if (video.paused || video.playbackRate === 0) return;
                 
                 let rng = Math.random();
                 
-                // Trigger Glitch (Deep-fry effect)
-                if (rng > 0.96 && video.playbackRate === 1.0) {
+                // 4% chance to trigger the "Dead Freeze"
+                if (rng > 0.96) {
                     video.classList.add("low-res");
-                    video.playbackRate = 0.3; // Slower playback for effect
-                    fpsNum.innerText = (Math.random() * 6).toFixed(1);
+                    video.playbackRate = 0; // 0 FPS freeze
+                    fpsNum.innerText = "0.0";
                     fpsNum.style.color = "red";
                     
+                    // Stay stuck for 35 seconds
                     setTimeout(() => {
                         video.playbackRate = 1.0;
                         video.classList.remove("low-res");
                         fpsNum.style.color = "#00FF00";
-                    }, 400); 
+                    }, 35000); 
                 } 
                 
+                // Normal FPS jitter
                 if (video.playbackRate === 1.0) {
                     fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
                 }
