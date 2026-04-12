@@ -12,20 +12,31 @@
             height: 100vh;
             overflow: hidden;
             background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             user-select: none; 
         }
 
+        /* The "Darkness" Trap - Covers everything behind the video */
+        #darkness-trap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 0; /* Behind the video */
+            cursor: default;
+        }
+
         #bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             max-width: 100%;
             max-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: 1;
+            z-index: 1; /* Above the trap */
             filter: blur(1px) contrast(1.1);
-            pointer-events: none; 
+            pointer-events: auto; /* Video stays clickable for replays */
         }
 
         .low-res {
@@ -33,20 +44,28 @@
             image-rendering: pixelated;
         }
 
-        /* The "System Error" Jumpscare Overlay */
-        #error-overlay {
+        /* Jumpscare / Error Container */
+        #scare-layer {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: blue; /* Old school Blue Screen of Death vibe */
+            background: #0000aa; /* Blue screen */
+            z-index: 9999;
             color: white;
-            font-family: monospace;
-            padding: 50px;
-            z-index: 1000;
-            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #scare-layer img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
         }
 
         #fps-display {
@@ -54,7 +73,7 @@
             top: 15px;
             left: 15px;
             color: #00FF00;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-size: 18px;
             z-index: 10;
             background: rgba(0, 0, 0, 0.7);
@@ -68,37 +87,36 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
             cursor: pointer;
-            font-family: sans-serif;
-            font-weight: bold;
+            font-size: 24px;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="error-overlay">
-        SYSTEM_ERROR: MEMORY_DUMP_FAILURE<br><br>
-        A critical error has occurred and the process must be terminated.<br>
-        Redirecting to safe zone...
+    <div id="darkness-trap"></div> <div id="scare-layer">
+        <img src="jumpscare.jpg" alt="CRASHED">
+        <h1 style="position:absolute; top: 10px; width: 100%;">FATAL_ERROR: 0x0006777</h1>
     </div>
 
     <div id="overlay">CLICK TO START</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
-    <video id="bg-video" loop playsinline disablePictureInPicture controlsList="nodownload noplaybackrate">
+    <video id="bg-video" loop playsinline disablePictureInPicture>
         <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
     </video>
 
     <script>
         const video = document.getElementById("bg-video");
         const overlay = document.getElementById("overlay");
-        const errorOverlay = document.getElementById("error-overlay");
+        const scareLayer = document.getElementById("scare-layer");
+        const darkness = document.getElementById("darkness-trap");
         const fpsNum = document.getElementById("fps-num");
 
         overlay.addEventListener('click', () => {
@@ -108,30 +126,29 @@
             startGlitchLogic();
         });
 
-        // DETECT CLICK IN DARKNESS
-        window.addEventListener('mousedown', (e) => {
+        // REPLAY Logic (When clicking the video)
+        video.addEventListener('mousedown', (e) => {
+            video.playbackRate = 1.0;
+            video.classList.remove("low-res");
+            video.currentTime = 0;
+            video.play();
+        });
+
+        // CRASH Logic (When clicking the darkness behind the video)
+        darkness.addEventListener('mousedown', () => {
             if (overlay.style.display === "none") {
-                // If they click the black background (not the video)
-                if (e.target.tagName === "BODY" || e.target.tagName === "HTML") {
-                    triggerCrash();
-                } else {
-                    // Normal Replay logic
-                    video.playbackRate = 1.0;
-                    video.classList.remove("low-res");
-                    video.currentTime = 0;
-                    video.play();
-                }
+                triggerCrash();
             }
         });
 
         function triggerCrash() {
             video.pause();
-            errorOverlay.style.display = "block";
+            scareLayer.style.display = "flex";
             
-            // After 1.5 seconds of the "Error Screen", send them to Google
+            // Redirect after 1.2 seconds
             setTimeout(() => {
                 window.location.href = "https://www.google.com";
-            }, 1500);
+            }, 1200);
         }
 
         function startGlitchLogic() {
@@ -155,13 +172,11 @@
                         }, 300); 
                     }, Math.random() * 600 + 200); 
                 } 
-                
                 if (video.playbackRate === 1.0) {
                     fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
                 }
             }, 100);
         }
     </script>
-
 </body>
 </html>
