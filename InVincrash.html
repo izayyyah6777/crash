@@ -14,20 +14,17 @@
         }
 
         #bg-video {
-            /* Hard Locked 1:1 Size */
-            width: 85vh; 
-            height: 85vh;
-            max-width: 95vw; 
-            max-height: 95vh;
+            /* Locked 1:1 Square */
+            width: 85vh; height: 85vh;
+            max-width: 95vw; max-height: 95vh;
             object-fit: contain;
             z-index: 1;
-            filter: contrast(1);
             image-rendering: pixelated;
         }
 
-        /* Deep-fry glitch: No glow, no blur, no scaling */
-        .low-res {
-            filter: contrast(4) saturate(2.8) brightness(1.2) !important;
+        /* Deep-fry glitch: No glow, no blur, no scale */
+        .frozen-glitch {
+            filter: contrast(4.5) saturate(3) brightness(1.1) !important;
         }
 
         #fps-display {
@@ -58,74 +55,4 @@
 <body oncontextmenu="return false;">
 
     <div id="overlay">INITIALIZE CORE</div>
-    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
-    
-    <div id="scare-layer">
-        <img src="jumpscare.jpg" alt="CRASH">
-    </div>
-
-    <video id="bg-video" loop playsinline disablePictureInPicture>
-        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
-    </video>
-
-    <script>
-        const video = document.getElementById("bg-video");
-        const overlay = document.getElementById("overlay");
-        const fpsNum = document.getElementById("fps-num");
-        const scare = document.getElementById("scare-layer");
-
-        overlay.addEventListener('click', () => {
-            video.muted = false;
-            video.play();
-            overlay.style.display = "none";
-            startGlitchLogic();
-        });
-
-        window.addEventListener('mousedown', (e) => {
-            if (overlay.style.display === "none") {
-                // Click background to crash
-                if (e.target !== video) {
-                    video.pause();
-                    scare.style.display = "block";
-                    setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
-                } else {
-                    // Click video to instant restart
-                    video.playbackRate = 1.0;
-                    video.classList.remove("low-res");
-                    video.currentTime = 0;
-                    video.play();
-                }
-            }
-        });
-
-        function startGlitchLogic() {
-            setInterval(() => {
-                // If the video is already frozen by a glitch, don't trigger another one
-                if (video.paused || video.playbackRate === 0) return;
-                
-                let rng = Math.random();
-                
-                // 4% chance to trigger the "Dead Freeze"
-                if (rng > 0.96) {
-                    video.classList.add("low-res");
-                    video.playbackRate = 0; // 0 FPS freeze
-                    fpsNum.innerText = "0.0";
-                    fpsNum.style.color = "red";
-                    
-                    // Stay stuck for 35 seconds
-                    setTimeout(() => {
-                        video.playbackRate = 1.0;
-                        video.classList.remove("low-res");
-                        fpsNum.style.color = "#00FF00";
-                    }, 35000); 
-                } 
-                
-                // Normal FPS jitter
-                if (video.playbackRate === 1.0) {
-                    fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
-                }
-            }, 100);
-        }
-    </script>
-</body>
-</html>
+    <div id="
