@@ -21,16 +21,14 @@
             image-rendering: pixelated;
         }
 
-        /* Fred video set to fill EVERYTHING */
         #fred-video {
             display: none;
             position: fixed;
             top: 0; left: 0;
-            width: 100vw; 
-            height: 100vh;
-            z-index: 5000; /* Above everything */
+            width: 100vw; height: 100vh;
+            z-index: 5000;
             background: black;
-            object-fit: cover; /* This makes it fill the whole screen */
+            object-fit: cover;
         }
 
         .frozen-glitch {
@@ -44,8 +42,6 @@
             padding: 5px; cursor: pointer;
             border: 1px transparent solid;
         }
-
-        #fps-display:hover { border-color: #00FF00; }
 
         #overlay {
             position: fixed; top: 0; left: 0;
@@ -107,6 +103,14 @@
             startFPSCounter();
         });
 
+        // REPLAY ON PAUSE (Forces Chromebook media player to loop instead of stop)
+        video.addEventListener('pause', () => {
+            if (!isFrozen && fred.style.display !== "block") {
+                video.currentTime = 0;
+                video.play();
+            }
+        });
+
         function playFred(e) {
             e.stopPropagation();
             video.pause();
@@ -118,10 +122,11 @@
             window.location.href = "https://classroom.google.com";
         };
 
+        // Precision 0:09 Freeze
         video.addEventListener('timeupdate', () => {
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
                 isFrozen = true;
-                video.pause();
+                video.pause(); // The 'pause' event above is blocked by the isFrozen check
                 video.classList.add("frozen-glitch");
                 fpsNum.innerText = "0.0";
                 fpsNum.style.color = "red";
