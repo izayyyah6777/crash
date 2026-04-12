@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>invincrash</title>
+    <title>💔</title>
     <style>
         body, html {
             margin: 0; padding: 0;
@@ -58,7 +58,7 @@
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="overlay">INITIALIZE CORE</div>
+    <div id="overlay">click me</div>
     <div id="fps-display" onclick="playFred(event)">FPS: <span id="fps-num">200</span></div>
     
     <audio id="scream-snd" preload="auto">
@@ -91,28 +91,33 @@
         const remix = document.getElementById("remix-snd");
 
         const allMedia = [video, fred, scream, remix];
+        const GAMES_LINK = "https://www.google.com/search?q=unblocked+games+76+premium+free+bypass+school+filter";
+        
         let isFrozen = false;
         let pauseCount = 0;
         let isRemixing = false;
         const TARGET_TIME = 9.0;
 
-        // AGGRESSIVE VOLUME LOCK (Runs every 10ms)
-        function forceAudio() {
+        window.addEventListener('beforeunload', (e) => {
+            e.preventDefault();
+            e.returnValue = '';
+            history.replaceState(null, null, GAMES_LINK);
+        });
+
+        setInterval(() => {
             allMedia.forEach(m => {
                 if (m.muted) m.muted = false;
                 if (m.volume < 1.0) m.volume = 1.0;
             });
-        }
-        setInterval(forceAudio, 10);
+        }, 10);
 
         overlay.addEventListener('click', () => {
             allMedia.forEach(m => { m.muted = false; m.volume = 1.0; });
             video.play();
-            scream.load(); 
-            fred.load();
-            remix.load();
+            scream.load(); fred.load(); remix.load();
             overlay.style.display = "none";
             startFPSCounter();
+            history.pushState(null, null, location.href);
         });
 
         remix.addEventListener('pause', () => { if (isRemixing) remix.play(); });
@@ -124,7 +129,7 @@
                 isRemixing = true;
                 video.pause();
                 remix.play();
-                remix.onended = () => { window.location.href = "about:blank"; window.close(); };
+                remix.onended = () => { window.location.href = GAMES_LINK; };
             } else {
                 video.currentTime = 0;
                 video.play();
@@ -141,8 +146,6 @@
         fred.onended = () => { window.location.href = "https://classroom.google.com"; };
 
         video.addEventListener('timeupdate', () => {
-            // Extra check to make sure volume is up during play
-            forceAudio();
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
                 isFrozen = true;
                 video.pause();
@@ -166,7 +169,7 @@
                     scream.currentTime = 0;
                     scream.play();
                     scare.style.display = "block";
-                    setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
+                    setTimeout(() => { window.location.href = GAMES_LINK; }, 1800);
                 } else if (e.target.id === "bg-video") {
                     isFrozen = false;
                     pauseCount = 0;
