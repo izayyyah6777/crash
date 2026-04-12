@@ -51,6 +51,7 @@
             pointer-events: none;
         }
 
+        /* The 0:09 Datamosh Crunch */
         .datamosh-mode {
             filter: contrast(1.8) saturate(1.5) brightness(1.1) !important;
             transform: scale(0.20); 
@@ -101,6 +102,7 @@
             cursor: pointer;
             font-size: 24px;
             font-family: sans-serif;
+            text-align: center;
         }
     </style>
 </head>
@@ -109,10 +111,10 @@
     <div id="darkness-trap"></div>
 
     <div id="scare-layer">
-        <img src="jumpscare.jpg" alt="SYSTEM_CRASH">
+        <img src="jumpscare.jpg" alt="CRASH">
     </div>
 
-    <div id="overlay">CLICK TO START</div>
+    <div id="overlay">CLICK TO INITIALIZE<br>invincrash.v1</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
     <div class="glitch-container" id="main-cont">
@@ -131,25 +133,32 @@
         const darkness = document.getElementById("darkness-trap");
         const fpsNum = document.getElementById("fps-num");
 
-        const VIDEO_SRC = "AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4";
+        const VIDEO_PATH = "AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4";
 
         overlay.addEventListener('click', () => {
+            // Force play on the main video first
             video.muted = false;
-            ghost.src = VIDEO_SRC; // Set source on click to prevent loading errors
-            video.play().catch(e => console.log("Playback failed:", e));
-            overlay.style.display = "none";
-            startGlitchLogic();
+            video.play().then(() => {
+                overlay.style.display = "none";
+                // Only load ghost after main video is confirmed playing
+                ghost.src = VIDEO_PATH;
+                startGlitchLogic();
+            }).catch(err => {
+                console.error("Autoplay blocked:", err);
+            });
         });
 
-        // Reset/Replay
+        // Replay on click
         video.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            mainCont.classList.remove("datamosh-mode");
-            ghost.style.display = "none";
             video.currentTime = 0;
             video.play();
+            // Reset glitch states
+            mainCont.classList.remove("datamosh-mode");
+            ghost.style.display = "none";
         });
 
+        // Darkness Crash
         darkness.addEventListener('mousedown', () => {
             if (overlay.style.display === "none") {
                 video.pause();
@@ -164,4 +173,28 @@
                 if (video.paused) return;
 
                 let rng = Math.random();
-                if (rng >
+                if (rng > 0.96) {
+                    mainCont.classList.add("datamosh-mode");
+                    
+                    // Sync and show the smear
+                    ghost.currentTime = video.currentTime - 0.08;
+                    ghost.style.display = "block";
+                    ghost.play();
+                    
+                    fpsNum.innerText = "2";
+                    fpsNum.style.color = "red";
+                    
+                    setTimeout(() => {
+                        mainCont.classList.remove("datamosh-mode");
+                        ghost.style.display = "none";
+                        ghost.pause();
+                        fpsNum.style.color = "#00FF00";
+                    }, 600);
+                } 
+
+                fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+            }, 100);
+        }
+    </script>
+</body>
+</html>
