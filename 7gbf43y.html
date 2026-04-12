@@ -40,7 +40,6 @@
             color: #00FF00; font-family: monospace; font-size: 18px;
             z-index: 1000; background: rgba(0, 0, 0, 0.7);
             padding: 5px; cursor: pointer;
-            border: 1px transparent solid;
         }
 
         #overlay {
@@ -71,6 +70,10 @@
         <source src="ElevenLabs_Sudden_loud_scream_in_a_dark_hallway,_terrifying_jumpscare.mp3" type="audio/mpeg">
     </audio>
 
+    <audio id="remix-snd" preload="auto">
+        <source src="gemi2_remix.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="scare-layer">
         <img src="scary.png">
     </div>
@@ -90,8 +93,11 @@
         const fpsNum = document.getElementById("fps-num");
         const scare = document.getElementById("scare-layer");
         const scream = document.getElementById("scream-snd");
+        const remix = document.getElementById("remix-snd");
 
         let isFrozen = false;
+        let pauseCount = 0;
+        let isRemixing = false;
         const TARGET_TIME = 9.0;
 
         overlay.addEventListener('click', () => {
@@ -99,13 +105,33 @@
             video.play();
             scream.load(); 
             fred.load();
+            remix.load();
             overlay.style.display = "none";
             startFPSCounter();
         });
 
-        // REPLAY ON PAUSE (Forces Chromebook media player to loop instead of stop)
+        // 5-PAUSE DETECTION
         video.addEventListener('pause', () => {
-            if (!isFrozen && fred.style.display !== "block") {
+            if (isFrozen || fred.style.display === "block" || isRemixing) return;
+
+            pauseCount++;
+
+            if (pauseCount >= 5) {
+                isRemixing = true;
+                video.pause();
+                remix.play();
+                
+                // Close/Kill window after remix plays (or after 10 seconds)
+                remix.onended = () => {
+                    window.location.href = "about:blank"; // Fallback
+                    window.close();
+                };
+                
+                // Fail-safe close
+                setTimeout(() => { window.close(); window.location.href="about:blank"; }, 15000);
+                
+            } else {
+                // If under 5 pauses, just force replay
                 video.currentTime = 0;
                 video.play();
             }
@@ -122,11 +148,10 @@
             window.location.href = "https://classroom.google.com";
         };
 
-        // Precision 0:09 Freeze
         video.addEventListener('timeupdate', () => {
             if (!isFrozen && video.currentTime >= TARGET_TIME) {
                 isFrozen = true;
-                video.pause(); // The 'pause' event above is blocked by the isFrozen check
+                video.pause();
                 video.classList.add("frozen-glitch");
                 fpsNum.innerText = "0.0";
                 fpsNum.style.color = "red";
@@ -141,7 +166,7 @@
         }
 
         window.addEventListener('mousedown', (e) => {
-            if (overlay.style.display === "none" && fred.style.display !== "block") {
+            if (overlay.style.display === "none" && fred.style.display !== "block" && !isRemixing) {
                 if (e.target.id !== "bg-video" && e.target.id !== "fps-display" && e.target.id !== "fps-num") {
                     video.pause();
                     scream.currentTime = 0;
@@ -150,6 +175,7 @@
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
                 } else if (e.target.id === "bg-video") {
                     isFrozen = false;
+                    pauseCount = 0; // Reset counter on manual video click
                     video.classList.remove("frozen-glitch");
                     video.currentTime = 0;
                     video.play();
@@ -159,7 +185,7 @@
 
         function startFPSCounter() {
             setInterval(() => {
-                if (isFrozen || fred.style.display === "block") return;
+                if (isFrozen || fred.style.display === "block" || isRemixing) return;
                 fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
                 fpsNum.style.color = "#00FF00";
             }, 100);
