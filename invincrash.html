@@ -15,7 +15,6 @@
             user-select: none; 
         }
 
-        /* Darkness trap for the jumpscare */
         #darkness-trap {
             position: fixed;
             top: 0;
@@ -26,7 +25,8 @@
             z-index: 0;
         }
 
-        .video-container {
+        /* Container ensures both videos stay perfectly stacked */
+        .video-wrapper {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -37,30 +37,26 @@
             justify-content: center;
             align-items: center;
             z-index: 1;
-            transition: transform 0.1s;
         }
 
         video {
             max-width: 100%;
             max-height: 100%;
-            image-rendering: pixelated; /* Keeps it crunchy, not blurry */
+            position: absolute; /* Stack them on top of each other */
+            image-rendering: pixelated;
         }
 
-        /* The Ghost Layer for Smearing */
         #ghost-video {
-            position: absolute;
-            top: 0;
-            left: 0;
             display: none;
-            opacity: 0.5;
-            mix-blend-mode: lighten; /* Blends frames like the YouTube example */
+            opacity: 0.6;
+            mix-blend-mode: screen; /* This creates the melting/overlapping effect */
             pointer-events: none;
         }
 
-        /* True 144p Crunch - No glow, just pixels */
-        .low-res {
-            filter: contrast(1.7) saturate(1.4) !important;
-            transform: scale(0.25); /* Shrinks internally to destroy detail */
+        /* 144p Crunch - Makes it blocky, not blurry */
+        .crunchy {
+            filter: contrast(1.6) saturate(1.2) !important;
+            transform: scale(0.25); 
         }
 
         #scare-layer {
@@ -105,4 +101,95 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
-            cursor:
+            cursor: pointer;
+            font-size: 24px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="darkness-trap"></div>
+
+    <div id="scare-layer">
+        <img src="jumpscare.jpg" alt="SYSTEM FAILURE">
+    </div>
+
+    <div id="overlay">CLICK TO START</div>
+    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+
+    <div class="video-wrapper" id="v-wrap">
+        <video id="bg-video" loop playsinline disablePictureInPicture>
+            <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+        </video>
+        <video id="ghost-video" loop playsinline muted></video>
+    </div>
+
+    <script>
+        const video = document.getElementById("bg-video");
+        const ghost = document.getElementById("ghost-video");
+        const vWrap = document.getElementById("v-wrap");
+        const overlay = document.getElementById("overlay");
+        const scareLayer = document.getElementById("scare-layer");
+        const darkness = document.getElementById("darkness-trap");
+        const fpsNum = document.getElementById("fps-num");
+
+        overlay.addEventListener('click', () => {
+            video.muted = false;
+            ghost.src = video.querySelector('source').src;
+            video.play();
+            ghost.play();
+            overlay.style.display = "none";
+            startGlitchLogic();
+        });
+
+        // REPLAY (Click the video area)
+        video.addEventListener('mousedown', () => {
+            vWrap.classList.remove("crunchy");
+            ghost.style.display = "none";
+            video.currentTime = 0;
+            ghost.currentTime = 0;
+            video.play();
+            ghost.play();
+        });
+
+        // JUMPSCARE (Click the darkness)
+        darkness.addEventListener('mousedown', () => {
+            if (overlay.style.display === "none") {
+                video.pause();
+                ghost.pause();
+                scareLayer.style.display = "flex";
+                setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
+            }
+        });
+
+        function startGlitchLogic() {
+            setInterval(() => {
+                let rng = Math.random();
+                
+                // Randomly trigger the "Frame Bleeding" glitch
+                if (rng > 0.96) {
+                    vWrap.classList.add("crunchy");
+                    ghost.style.display = "block";
+                    
+                    // Ghost stays 0.1s behind to create the smear effect
+                    ghost.currentTime = video.currentTime - 0.1; 
+                    
+                    fpsNum.innerText = Math.floor(Math.random() * 8) + 4;
+                    fpsNum.style.color = "red";
+                    
+                    setTimeout(() => {
+                        vWrap.classList.remove("crunchy");
+                        ghost.style.display = "none";
+                        fpsNum.style.color = "#00FF00";
+                    }, Math.random() * 500 + 300);
+                } 
+
+                if (overlay.style.display === "none") {
+                    fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
