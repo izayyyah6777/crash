@@ -1,192 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>a diabolical html</title>
-    <style>
-        body, html {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
-            overflow: hidden; background-color: black;
-            display: flex; justify-content: center; align-items: center;
-            user-select: none; 
+<style>
+    /* Add these new glitch animations */
+    @keyframes melt {
+        0% { filter: contrast(1) brightness(1); transform: scale(1); }
+        50% { filter: contrast(5) brightness(1.5) blur(2px); transform: scale(1.05) skewX(5deg); }
+        100% { filter: contrast(10) brightness(2) blur(8px); transform: scale(1.1) translateY(20px); opacity: 0.5; }
+    }
+
+    .melting {
+        animation: melt 1.5s forwards;
+        image-rendering: pixelated;
+    }
+
+    .frozen-glitch {
+        filter: contrast(8) saturate(5) hue-rotate(90deg) !important;
+    }
+</style>
+
+<script>
+    // ... (rest of the variables stay the same)
+
+    video.addEventListener('timeupdate', () => {
+        // Trigger the "Meltdown" slightly before the hard freeze
+        if (!isFrozen && video.currentTime >= (TARGET_TIME - 1.5) && video.currentTime < TARGET_TIME) {
+            video.playbackRate = 2.5; // Instant speed up
+            video.classList.add("melting");
         }
 
-        #bg-video {
-            width: 85vh; height: 85vh;
-            max-width: 95vw; max-height: 95vh;
-            object-fit: contain;
-            z-index: 1;
-            image-rendering: pixelated;
-        }
-
-        #fred-video {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 5000; background: black; object-fit: cover;
-        }
-
-        .frozen-glitch {
-            filter: contrast(5) saturate(3.5) brightness(1.2) !important;
-        }
-
-        #fps-display {
-            position: absolute; top: 15px; left: 15px;
-            color: #00FF00; font-family: monospace; font-size: 18px;
-            z-index: 1000; background: rgba(0, 0, 0, 0.7);
-            padding: 5px; cursor: pointer;
-        }
-
-        #overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); color: white;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 6000; cursor: pointer; font-family: sans-serif;
-            font-weight: bold; font-size: 24px;
-        }
-
-        #scare-layer {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
-        }
-
-        #scare-layer img { width: 100%; height: 100%; object-fit: contain; }
-    </style>
-</head>
-<body oncontextmenu="return false;">
-
-    <div id="overlay">click me</div>
-    <div id="fps-display" onclick="playFred(event)">FPS: <span id="fps-num">200</span></div>
-    
-    <audio id="scream-snd" preload="auto">
-        <source src="ElevenLabs_Sudden_loud_scream_in_a_dark_hallway,_terrifying_jumpscare.mp3" type="audio/mpeg">
-    </audio>
-
-    <audio id="remix-snd" preload="auto">
-        <source src="gemi2_remix.mp3" type="audio/mpeg">
-    </audio>
-
-    <div id="scare-layer">
-        <img src="scary.png">
-    </div>
-
-    <video id="bg-video" loop playsinline disablePictureInPicture>
-        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
-    </video>
-
-    <video id="fred-video" playsinline>
-        <source src="FREDBEARDOMER.mp4" type="video/mp4">
-    </video>
-
-    <script>
-        const video = document.getElementById("bg-video");
-        const fred = document.getElementById("fred-video");
-        const overlay = document.getElementById("overlay");
-        const fpsNum = document.getElementById("fps-num");
-        const scare = document.getElementById("scare-layer");
-        const scream = document.getElementById("scream-snd");
-        const remix = document.getElementById("remix-snd");
-
-        const allMedia = [video, fred, scream, remix];
-        const GAMES_LINK = "https://www.google.com/search?q=unblocked+games+76+premium+free+bypass+school+filter";
-        
-        let isFrozen = false;
-        let pauseCount = 0;
-        let isRemixing = false;
-        const TARGET_TIME = 9.0;
-
-        window.addEventListener('beforeunload', (e) => {
-            e.preventDefault();
-            e.returnValue = '';
-            history.replaceState(null, null, GAMES_LINK);
-        });
-
-        setInterval(() => {
-            allMedia.forEach(m => {
-                if (m.muted) m.muted = false;
-                if (m.volume < 1.0) m.volume = 1.0;
-            });
-        }, 10);
-
-        overlay.addEventListener('click', () => {
-            allMedia.forEach(m => { m.muted = false; m.volume = 1.0; });
-            video.play();
-            scream.load(); fred.load(); remix.load();
-            overlay.style.display = "none";
-            startFPSCounter();
-            history.pushState(null, null, location.href);
-        });
-
-        remix.addEventListener('pause', () => { if (isRemixing) remix.play(); });
-
-        video.addEventListener('pause', () => {
-            if (isFrozen || fred.style.display === "block" || isRemixing) return;
-            pauseCount++;
-            if (pauseCount >= 5) {
-                isRemixing = true;
-                video.pause();
-                remix.play();
-                remix.onended = () => { window.location.href = GAMES_LINK; };
-            } else {
-                video.currentTime = 0;
-                video.play();
-            }
-        });
-
-        function playFred(e) {
-            e.stopPropagation();
+        if (!isFrozen && video.currentTime >= TARGET_TIME) {
+            isFrozen = true;
             video.pause();
-            fred.style.display = "block";
-            fred.play();
-        }
+            video.playbackRate = 1; 
+            video.classList.remove("melting");
+            video.classList.add("frozen-glitch");
+            
+            fpsNum.innerText = "0.0";
+            fpsNum.style.color = "red";
+            
+            // Randomly "flicker" the screen during the freeze
+            let flicker = setInterval(() => {
+                if(!isFrozen) { clearInterval(flicker); return; }
+                video.style.opacity = Math.random() > 0.1 ? "1" : "0";
+            }, 50);
 
-        fred.onended = () => { window.location.href = "https://classroom.google.com"; };
-
-        video.addEventListener('timeupdate', () => {
-            if (!isFrozen && video.currentTime >= TARGET_TIME) {
-                isFrozen = true;
-                video.pause();
-                video.classList.add("frozen-glitch");
-                fpsNum.innerText = "0.0";
-                fpsNum.style.color = "red";
-                setTimeout(() => { if (isFrozen) resumeVideo(); }, 35000);
-            }
-        });
-
-        function resumeVideo() {
-            isFrozen = false;
-            video.classList.remove("frozen-glitch");
-            video.play();
-        }
-
-        window.addEventListener('mousedown', (e) => {
-            if (overlay.style.display === "none" && fred.style.display !== "block" && !isRemixing) {
-                if (e.target.id !== "bg-video" && e.target.id !== "fps-display" && e.target.id !== "fps-num") {
-                    video.pause();
-                    scream.currentTime = 0;
-                    scream.play();
-                    scare.style.display = "block";
-                    setTimeout(() => { window.location.href = GAMES_LINK; }, 1800);
-                } else if (e.target.id === "bg-video") {
-                    isFrozen = false;
-                    pauseCount = 0;
-                    video.classList.remove("frozen-glitch");
-                    video.currentTime = 0;
-                    video.play();
+            setTimeout(() => { 
+                if (isFrozen) {
+                    clearInterval(flicker);
+                    video.style.opacity = "1";
+                    resumeVideo(); 
                 }
-            }
-        });
-
-        function startFPSCounter() {
-            setInterval(() => {
-                if (isFrozen || fred.style.display === "block" || isRemixing) return;
-                fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
-                fpsNum.style.color = "#00FF00";
-            }, 100);
+            }, 35000);
         }
-    </script>
-</body>
-</html>
+    });
+</script>
