@@ -15,7 +15,6 @@
             user-select: none; 
         }
 
-        /* The "Darkness" Trap - Covers everything behind the video */
         #darkness-trap {
             position: fixed;
             top: 0;
@@ -23,28 +22,44 @@
             width: 100vw;
             height: 100vh;
             background: black;
-            z-index: 0; /* Behind the video */
-            cursor: default;
+            z-index: 0;
         }
 
-        #bg-video {
+        .video-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            max-width: 100%;
-            max-height: 100%;
-            z-index: 1; /* Above the trap */
-            filter: blur(1px) contrast(1.1);
-            pointer-events: auto; /* Video stays clickable for replays */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
         }
 
-        .low-res {
-            filter: blur(8px) contrast(1.4) brightness(1.1) !important;
+        video {
+            max-width: 100%;
+            max-height: 100%;
             image-rendering: pixelated;
         }
 
-        /* Jumpscare / Error Container */
+        /* The Ghost Frame that creates the overlap glitch */
+        #ghost-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0.6;
+            mix-blend-mode: screen; /* This creates the "overlap" look */
+            pointer-events: none;
+        }
+
+        .low-res {
+            filter: contrast(2) saturate(1.5) !important;
+            transform: scale(0.2); /* Crushes resolution to 144p */
+        }
+
         #scare-layer {
             display: none;
             position: fixed;
@@ -52,14 +67,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0000aa; /* Blue screen */
+            background: black;
             z-index: 9999;
-            color: white;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
         }
 
         #scare-layer img {
@@ -87,7 +96,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             color: white;
             display: flex;
             justify-content: center;
@@ -95,25 +104,31 @@
             z-index: 100;
             cursor: pointer;
             font-size: 24px;
+            font-family: sans-serif;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="darkness-trap"></div> <div id="scare-layer">
-        <img src="jumpscare.jpg" alt="CRASHED">
-        <h1 style="position:absolute; top: 10px; width: 100%;">FATAL_ERROR: 0x0006777</h1>
+    <div id="darkness-trap"></div>
+
+    <div id="scare-layer">
+        <img src="jumpscare.jpg" alt="SYSTEM FAILURE">
     </div>
 
     <div id="overlay">CLICK TO START</div>
     <div id="fps-display">FPS: <span id="fps-num">200</span></div>
 
-    <video id="bg-video" loop playsinline disablePictureInPicture>
-        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
-    </video>
+    <div class="video-container">
+        <video id="bg-video" loop playsinline disablePictureInPicture>
+            <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+        </video>
+        <video id="ghost-video" loop playsinline muted></video>
+    </div>
 
     <script>
         const video = document.getElementById("bg-video");
+        const ghost = document.getElementById("ghost-video");
         const overlay = document.getElementById("overlay");
         const scareLayer = document.getElementById("scare-layer");
         const darkness = document.getElementById("darkness-trap");
@@ -121,58 +136,56 @@
 
         overlay.addEventListener('click', () => {
             video.muted = false;
+            ghost.src = video.querySelector('source').src;
             video.play();
+            ghost.play();
             overlay.style.display = "none";
             startGlitchLogic();
         });
 
-        // REPLAY Logic (When clicking the video)
-        video.addEventListener('mousedown', (e) => {
+        // Replay Logic
+        const resetVideo = () => {
             video.playbackRate = 1.0;
             video.classList.remove("low-res");
+            ghost.style.display = "none";
             video.currentTime = 0;
+            ghost.currentTime = 0;
             video.play();
-        });
+            ghost.play();
+        };
 
-        // CRASH Logic (When clicking the darkness behind the video)
+        video.addEventListener('mousedown', resetVideo);
+
         darkness.addEventListener('mousedown', () => {
             if (overlay.style.display === "none") {
-                triggerCrash();
+                video.pause();
+                ghost.pause();
+                scareLayer.style.display = "flex";
+                setTimeout(() => { window.location.href = "https://www.google.com"; }, 1200);
             }
         });
-
-        function triggerCrash() {
-            video.pause();
-            scareLayer.style.display = "flex";
-            
-            // Redirect after 1.2 seconds
-            setTimeout(() => {
-                window.location.href = "https://www.google.com";
-            }, 1200);
-        }
 
         function startGlitchLogic() {
             setInterval(() => {
                 let rng = Math.random();
-                if (rng > 0.96 && video.playbackRate === 1.0) {
+                
+                // 5% chance to trigger the Overlap Glitch
+                if (rng > 0.95) {
                     video.classList.add("low-res");
-                    video.playbackRate = 0; 
-                    fpsNum.innerText = "9";
+                    ghost.style.display = "block";
+                    // Offset the ghost video slightly to create the overlap
+                    ghost.currentTime = video.currentTime - 0.2; 
+                    fpsNum.innerText = "12";
                     fpsNum.style.color = "red";
                     
                     setTimeout(() => {
-                        video.playbackRate = 3.0;
-                        fpsNum.innerText = "600+";
-                        fpsNum.style.color = "#00FFFF";
-                        
-                        setTimeout(() => {
-                            video.playbackRate = 1.0;
-                            video.classList.remove("low-res");
-                            fpsNum.style.color = "#00FF00";
-                        }, 300); 
-                    }, Math.random() * 600 + 200); 
+                        video.classList.remove("low-res");
+                        ghost.style.display = "none";
+                        fpsNum.style.color = "#00FF00";
+                    }, Math.random() * 800 + 200);
                 } 
-                if (video.playbackRate === 1.0) {
+
+                if (overlay.style.display === "none") {
                     fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
                 }
             }, 100);
