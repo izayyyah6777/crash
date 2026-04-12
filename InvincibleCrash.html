@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>invincrash</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden; background-color: black;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none; 
+        }
+
+        #bg-video {
+            width: 85vh; height: 85vh;
+            max-width: 95vw; max-height: 95vh;
+            object-fit: contain;
+            z-index: 1;
+            image-rendering: pixelated;
+        }
+
+        /* 0:09 Deep-Fry glitch */
+        .frozen-glitch {
+            filter: contrast(5) saturate(3.5) brightness(1.2) !important;
+        }
+
+        #fps-display {
+            position: absolute; top: 15px; left: 15px;
+            color: #00FF00; font-family: monospace; font-size: 18px;
+            z-index: 10; background: rgba(0, 0, 0, 0.7);
+            padding: 5px; pointer-events: none;
+        }
+
+        #overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); color: white;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; cursor: pointer; font-family: sans-serif;
+            font-weight: bold; font-size: 24px;
+        }
+
+        #scare-layer {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+        }
+
+        #scare-layer img { 
+            width: 100%; height: 100%; 
+            object-fit: cover; 
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="overlay">Inivncrash start</div>
+    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+    
+    <audio id="scream-snd" preload="auto">
+        <source src="ElevenLabs_Sudden_loud_scream_in_a_dark_hallway,_terrifying_jumpscare.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="scare-layer">
+        <img src="scary.png">
+    </div>
+
+    <video id="bg-video" loop playsinline disablePictureInPicture>
+        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+    </video>
+
+    <script>
+        const video = document.getElementById("bg-video");
+        const overlay = document.getElementById("overlay");
+        const fpsNum = document.getElementById("fps-num");
+        const scare = document.getElementById("scare-layer");
+        const scream = document.getElementById("scream-snd");
+
+        let isFrozen = false;
+        const TARGET_TIME = 9.0;
+
+        overlay.addEventListener('click', () => {
+            video.muted = false;
+            video.play();
+            // Load scream on first click so it's ready to fire
+            scream.load(); 
+            overlay.style.display = "none";
+            startFPSCounter();
+        });
+
+        // 0:09 Hard Freeze
+        video.addEventListener('timeupdate', () => {
+            if (!isFrozen && video.currentTime >= TARGET_TIME) {
+                isFrozen = true;
+                video.pause();
+                video.classList.add("frozen-glitch");
+                fpsNum.innerText = "0.0";
+                fpsNum.style.color = "red";
+                setTimeout(() => { if (isFrozen) resumeVideo(); }, 35000);
+            }
+        });
+
+        function resumeVideo() {
+            isFrozen = false;
+            video.classList.remove("frozen-glitch");
+            video.play();
+        }
+
+        // Crash Trigger (Clicking Background)
+        window.addEventListener('mousedown', (e) => {
+            if (overlay.style.display === "none") {
+                if (e.target !== video) {
+                    video.pause();
+                    scream.volume = 1.0;
+                    scream.play().catch(err => console.log("Audio block:", err));
+                    scare.style.display = "block";
+                    
+                    // Redirect to google after 1.8s
+                    setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
+                } else {
+                    // Reset everything if video is clicked
+                    isFrozen = false;
+                    video.classList.remove("frozen-glitch");
+                    video.currentTime = 0;
+                    video.play();
+                }
+            }
+        });
+
+        function startFPSCounter() {
+            setInterval(() => {
+                if (isFrozen) return;
+                fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+                fpsNum.style.color = "#00FF00";
+            }, 100);
+        }
+    </script>
+</body>
+</html>
