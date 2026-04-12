@@ -12,10 +12,10 @@
             display: flex; justify-content: center; align-items: center;
         }
 
-        #v-container {
+        #wrapper {
             position: relative;
-            width: 85vh; height: 85vh;
-            max-width: 95vw; max-height: 95vh;
+            width: 80vh; height: 80vh; /* Strictly 1:1 */
+            max-width: 90vw; max-height: 90vh;
             background: #000;
             z-index: 5;
         }
@@ -26,18 +26,17 @@
             image-rendering: pixelated;
         }
 
-        /* 0:09 Smear Glitch */
-        .glitch-on {
-            filter: contrast(3) saturate(2) brightness(1.5) blur(3px) hue-rotate(20deg);
-            transform: scale(0.3) rotate(1deg);
+        /* 0:09 Glitch Effect */
+        .mosh {
+            filter: contrast(3) saturate(2) brightness(1.5) blur(5px);
+            transform: scale(0.3) skewX(2deg);
         }
 
         #overlay {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: #000; color: #555;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
+            background: #000; color: #fff;
+            display: flex; justify-content: center; align-items: center;
             z-index: 100; cursor: pointer; font-family: monospace;
         }
 
@@ -48,86 +47,64 @@
         }
 
         #scare img { width: 100%; height: 100%; object-fit: cover; }
-
-        #fps {
-            position: fixed; top: 10px; left: 10px;
-            color: #0f0; font-family: monospace; z-index: 10;
-        }
     </style>
 </head>
 <body>
 
-    <div id="fps">FPS: 200</div>
-    <div id="overlay" onclick="launch()">
-        <p id="status">[ INITIALIZING... ]</p>
-        <p id="subtext">CLICK TO RUN</p>
-    </div>
-
+    <div id="overlay" onclick="forcePlay()">[ CLICK TO FORCE BOOT ]</div>
     <div id="scare"><img src="jumpscare.jpg"></div>
 
-    <div style="position:fixed; width:100%; height:100%; z-index:1;" onmousedown="crash()"></div>
-
-    <div id="v-container">
-        <video id="player" loop playsinline muted preload="auto">
-            <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+    <div id="wrapper">
+        <video id="v" loop playsinline muted crossorigin="anonymous">
+            <source src="./AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
         </video>
     </div>
 
     <script>
-        const v = document.getElementById('player');
+        const v = document.getElementById('v');
         const o = document.getElementById('overlay');
         const s = document.getElementById('scare');
-        const f = document.getElementById('fps');
-        const status = document.getElementById('status');
 
-        // Error Feedback
-        v.onerror = () => {
-            status.innerText = "[ FATAL: FILE NOT READABLE ]";
-            status.style.color = "red";
-        };
-
-        function launch() {
-            // Force interaction
+        function forcePlay() {
+            // Unmute and force re-load from source
             v.muted = false;
+            v.load(); 
             
-            v.play().then(() => {
-                o.style.display = "none";
-                startLoop();
-            }).catch(e => {
-                console.log("Autoplay block");
-                // Last ditch: try playing muted then unmuting
-                v.play();
-                o.style.display = "none";
-                startLoop();
-            });
-        }
+            let promise = v.play();
 
-        function crash() {
-            if (o.style.display === "none") {
-                v.pause();
-                s.style.display = "block";
-                setTimeout(() => { window.location.href = "https://google.com"; }, 1500);
+            if (promise !== undefined) {
+                promise.then(() => {
+                    o.style.display = "none";
+                    startGlitches();
+                }).catch(err => {
+                    // Fail-safe: play muted if unmuted is blocked
+                    v.muted = true;
+                    v.play();
+                    o.style.display = "none";
+                });
             }
         }
 
-        function startLoop() {
+        function startGlitches() {
             setInterval(() => {
                 if (v.paused) return;
                 if (Math.random() > 0.97) {
-                    v.classList.add('glitch-on');
-                    f.innerText = "FPS: 0.1";
-                    f.style.color = "red";
-                    setTimeout(() => {
-                        v.classList.remove('glitch-on');
-                        f.style.color = "#0f0";
-                    }, 400);
-                }
-                if (!v.classList.contains('glitch-on')) {
-                    f.innerText = "FPS: " + (Math.floor(Math.random() * 5) + 196);
+                    v.classList.add('mosh');
+                    setTimeout(() => v.classList.remove('mosh'), 400);
                 }
             }, 100);
         }
 
+        // Click empty space to crash
+        document.body.onmousedown = (e) => {
+            if (e.target === document.body && o.style.display === "none") {
+                v.pause();
+                s.style.display = "block";
+                setTimeout(() => window.location.href = "https://google.com", 1500);
+            }
+        };
+
+        // Click video to reset
         v.onmousedown = (e) => {
             e.stopPropagation();
             v.currentTime = 0;
