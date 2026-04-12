@@ -90,13 +90,23 @@
         const scream = document.getElementById("scream-snd");
         const remix = document.getElementById("remix-snd");
 
+        const allMedia = [video, fred, scream, remix];
         let isFrozen = false;
         let pauseCount = 0;
         let isRemixing = false;
         const TARGET_TIME = 9.0;
 
+        // FORCE UNMUTE LOGIC
+        function lockVolume(el) {
+            el.addEventListener('volumechange', () => {
+                if (el.muted) el.muted = false;
+                if (el.volume < 1.0) el.volume = 1.0;
+            });
+        }
+        allMedia.forEach(lockVolume);
+
         overlay.addEventListener('click', () => {
-            video.muted = false;
+            allMedia.forEach(m => { m.muted = false; m.volume = 1.0; });
             video.play();
             scream.load(); 
             fred.load();
@@ -105,83 +115,7 @@
             startFPSCounter();
         });
 
-        // LOCK REMIX AUDIO (Unpauseable)
-        remix.addEventListener('pause', () => {
-            if (isRemixing) {
-                remix.play();
-            }
-        });
+        remix.addEventListener('pause', () => { if (isRemixing) remix.play(); });
 
-        // 5-PAUSE TRAP
         video.addEventListener('pause', () => {
-            if (isFrozen || fred.style.display === "block" || isRemixing) return;
-            pauseCount++;
-            if (pauseCount >= 5) {
-                isRemixing = true;
-                video.pause();
-                remix.play();
-                
-                remix.onended = () => {
-                    window.location.href = "about:blank";
-                    window.close();
-                };
-            } else {
-                video.currentTime = 0;
-                video.play();
-            }
-        });
-
-        function playFred(e) {
-            e.stopPropagation();
-            video.pause();
-            fred.style.display = "block";
-            fred.play();
-        }
-
-        fred.onended = () => { window.location.href = "https://classroom.google.com"; };
-
-        video.addEventListener('timeupdate', () => {
-            if (!isFrozen && video.currentTime >= TARGET_TIME) {
-                isFrozen = true;
-                video.pause();
-                video.classList.add("frozen-glitch");
-                fpsNum.innerText = "0.0";
-                fpsNum.style.color = "red";
-                setTimeout(() => { if (isFrozen) resumeVideo(); }, 35000);
-            }
-        });
-
-        function resumeVideo() {
-            isFrozen = false;
-            video.classList.remove("frozen-glitch");
-            video.play();
-        }
-
-        window.addEventListener('mousedown', (e) => {
-            if (overlay.style.display === "none" && fred.style.display !== "block" && !isRemixing) {
-                if (e.target.id !== "bg-video" && e.target.id !== "fps-display" && e.target.id !== "fps-num") {
-                    video.pause();
-                    scream.currentTime = 0;
-                    scream.play();
-                    scare.style.display = "block";
-                    setTimeout(() => { window.location.href = "https://www.google.com"; }, 1800);
-                } else if (e.target.id === "bg-video") {
-                    isFrozen = false;
-                    pauseCount = 0;
-                    video.classList.remove("frozen-glitch");
-                    video.currentTime = 0;
-                    video.play();
-                }
-            }
-        });
-
-        function startFPSCounter() {
-            setInterval(() => {
-                if (isFrozen || fred.style.display === "block" || isRemixing) return;
-                fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
-                fpsNum.style.color = "#00FF00";
-            }, 100);
-        }
-    </script>
-</body>
-</html>
+            if (isFrozen || fred
