@@ -15,7 +15,6 @@
             user-select: none;
         }
 
-        /* The Trap Layer */
         #darkness-trap {
             position: fixed;
             top: 0;
@@ -26,7 +25,6 @@
             z-index: 0;
         }
 
-        /* GRID STACK: This ensures both videos are perfectly aligned */
         .glitch-container {
             position: absolute;
             top: 50%;
@@ -40,7 +38,7 @@
         }
 
         video {
-            grid-area: 1 / 1; /* Both videos sit in the exact same grid cell */
+            grid-area: 1 / 1; 
             max-width: 100%;
             max-height: 100%;
             image-rendering: pixelated;
@@ -49,12 +47,10 @@
         #ghost-video {
             display: none;
             opacity: 0.7;
-            /* 'color-dodge' or 'screen' mimics the datamosh bleed at 0:09 */
             mix-blend-mode: color-dodge; 
             pointer-events: none;
         }
 
-        /* 144p Smash */
         .datamosh-mode {
             filter: contrast(1.8) saturate(1.5) brightness(1.1) !important;
             transform: scale(0.20); 
@@ -96,7 +92,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.98);
+            background: rgba(0,0,0,0.95);
             color: white;
             display: flex;
             justify-content: center;
@@ -117,4 +113,55 @@
     </div>
 
     <div id="overlay">CLICK TO START</div>
-    <div id="fps-display">FPS: <span id="fps-num">
+    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+
+    <div class="glitch-container" id="main-cont">
+        <video id="bg-video" loop playsinline>
+            <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+        </video>
+        <video id="ghost-video" loop playsinline muted></video>
+    </div>
+
+    <script>
+        const video = document.getElementById("bg-video");
+        const ghost = document.getElementById("ghost-video");
+        const mainCont = document.getElementById("main-cont");
+        const overlay = document.getElementById("overlay");
+        const scareLayer = document.getElementById("scare-layer");
+        const darkness = document.getElementById("darkness-trap");
+        const fpsNum = document.getElementById("fps-num");
+
+        const VIDEO_SRC = "AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4";
+
+        overlay.addEventListener('click', () => {
+            video.muted = false;
+            ghost.src = VIDEO_SRC; // Set source on click to prevent loading errors
+            video.play().catch(e => console.log("Playback failed:", e));
+            overlay.style.display = "none";
+            startGlitchLogic();
+        });
+
+        // Reset/Replay
+        video.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            mainCont.classList.remove("datamosh-mode");
+            ghost.style.display = "none";
+            video.currentTime = 0;
+            video.play();
+        });
+
+        darkness.addEventListener('mousedown', () => {
+            if (overlay.style.display === "none") {
+                video.pause();
+                ghost.pause();
+                scareLayer.style.display = "flex";
+                setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
+            }
+        });
+
+        function startGlitchLogic() {
+            setInterval(() => {
+                if (video.paused) return;
+
+                let rng = Math.random();
+                if (rng >
