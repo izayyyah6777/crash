@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>invincrash</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden; background-color: black;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none; 
+        }
+
+        #bg-video {
+            /* Forced 1:1 Centering Logic */
+            width: 85vh; height: 85vh;
+            max-width: 95vw; max-height: 95vh;
+            object-fit: contain;
+            z-index: 1;
+            filter: contrast(1.1);
+            transition: filter 0.1s ease;
+            image-rendering: pixelated;
+        }
+
+        /* 0:09 Datamosh Smear Effect */
+        .low-res {
+            filter: contrast(2.5) saturate(2) brightness(1.2) blur(4px) !important;
+            transform: scale(0.35);
+        }
+
+        #fps-display {
+            position: absolute; top: 15px; left: 15px;
+            color: #00FF00; font-family: monospace; font-size: 18px;
+            z-index: 10; background: rgba(0, 0, 0, 0.7);
+            padding: 5px; pointer-events: none;
+        }
+
+        #overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); color: white;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; cursor: pointer; font-family: sans-serif;
+            font-weight: bold; font-size: 24px;
+        }
+
+        #scare-layer {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 9999;
+        }
+
+        #scare-layer img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="overlay">INITIALIZE CORE</div>
+    <div id="fps-display">FPS: <span id="fps-num">200</span></div>
+    
+    <div id="scare-layer">
+        <img src="jumpscare.jpg" alt="CRASH">
+    </div>
+
+    <video id="bg-video" loop playsinline disablePictureInPicture>
+        <source src="AhaTok_sight.edits_84d687cc-4179-4f72-a710-028686bc0ca2_.mp4" type="video/mp4">
+    </video>
+
+    <script>
+        const video = document.getElementById("bg-video");
+        const overlay = document.getElementById("overlay");
+        const fpsNum = document.getElementById("fps-num");
+        const scare = document.getElementById("scare-layer");
+
+        // START
+        overlay.addEventListener('click', () => {
+            video.muted = false;
+            video.play();
+            overlay.style.display = "none";
+            startGlitchLogic();
+        });
+
+        // CRASH LOGIC (Click outside the video)
+        window.addEventListener('mousedown', (e) => {
+            if (overlay.style.display === "none") {
+                // If you click the black background (not the video)
+                if (e.target !== video) {
+                    video.pause();
+                    scare.style.display = "block";
+                    setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
+                } else {
+                    // REPLAY on clicking video
+                    video.playbackRate = 1.0;
+                    video.classList.remove("low-res");
+                    video.currentTime = 0;
+                    video.play();
+                }
+            }
+        });
+
+        function startGlitchLogic() {
+            setInterval(() => {
+                if (video.paused) return;
+                
+                let rng = Math.random();
+                
+                // Datamosh Trigger
+                if (rng > 0.96 && video.playbackRate === 1.0) {
+                    video.classList.add("low-res");
+                    video.playbackRate = 0.1; // Extreme slow motion smear
+                    fpsNum.innerText = "2.4";
+                    fpsNum.style.color = "red";
+                    
+                    setTimeout(() => {
+                        video.playbackRate = 1.0;
+                        video.classList.remove("low-res");
+                        fpsNum.style.color = "#00FF00";
+                    }, 500); 
+                } 
+                
+                if (video.playbackRate === 1.0) {
+                    fpsNum.innerText = Math.floor(Math.random() * (205 - 195 + 1)) + 195;
+                }
+            }, 100);
+        }
+    </script>
+
+</body>
+</html>
