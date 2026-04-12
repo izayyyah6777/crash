@@ -27,7 +27,7 @@
             z-index: 5000; background: black; object-fit: cover;
         }
 
-        /* NEW MELT ANIMATION */
+        /* GLITCH & MELT ANIMATIONS */
         @keyframes melt {
             0% { filter: contrast(1) brightness(1); transform: scale(1); }
             50% { filter: contrast(5) brightness(1.5) blur(2px); transform: scale(1.05) skewX(5deg); }
@@ -69,7 +69,7 @@
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="overlay">INITIALIZE CORE</div>
+    <div id="overlay">click me</div>
     <div id="fps-display" onclick="playFred(event)">FPS: <span id="fps-num">200</span></div>
     
     <audio id="scream-snd" preload="auto">
@@ -117,7 +117,7 @@
             });
         }, 10);
 
-        // Anti-Refresh History Swap
+        // Anti-Refresh Logic
         window.addEventListener('beforeunload', (e) => {
             e.preventDefault();
             e.returnValue = '';
@@ -158,9 +158,8 @@
 
         fred.onended = () => { window.location.href = "https://classroom.google.com"; };
 
-        // MELT AND GLITCH LOGIC
         video.addEventListener('timeupdate', () => {
-            // Start melting/speeding up 1.5s before the target
+            // Speed up and melt 1.5s before freeze
             if (!isFrozen && video.currentTime >= (TARGET_TIME - 1.5) && video.currentTime < TARGET_TIME) {
                 video.playbackRate = 2.5;
                 video.classList.add("melting");
