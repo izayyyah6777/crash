@@ -14,20 +14,21 @@
         }
 
         #bg-video {
-            /* Forced 1:1 Centering Logic */
-            width: 85vh; height: 85vh;
-            max-width: 95vw; max-height: 95vh;
+            /* This locks the size permanently */
+            width: 85vh; 
+            height: 85vh;
+            max-width: 95vw; 
+            max-height: 95vh;
             object-fit: contain;
             z-index: 1;
             filter: contrast(1.1);
-            transition: filter 0.1s ease;
+            transition: filter 0.05s ease;
             image-rendering: pixelated;
         }
 
-        /* 0:09 Datamosh Smear Effect */
+        /* Glitch: No scaling, just visual melting */
         .low-res {
-            filter: contrast(2.5) saturate(2) brightness(1.2) blur(4px) !important;
-            transform: scale(0.35);
+            filter: contrast(3) saturate(2.5) brightness(1.3) blur(10px) !important;
         }
 
         #fps-display {
@@ -74,7 +75,6 @@
         const fpsNum = document.getElementById("fps-num");
         const scare = document.getElementById("scare-layer");
 
-        // START
         overlay.addEventListener('click', () => {
             video.muted = false;
             video.play();
@@ -82,16 +82,13 @@
             startGlitchLogic();
         });
 
-        // CRASH LOGIC (Click outside the video)
         window.addEventListener('mousedown', (e) => {
             if (overlay.style.display === "none") {
-                // If you click the black background (not the video)
                 if (e.target !== video) {
                     video.pause();
                     scare.style.display = "block";
                     setTimeout(() => { window.location.href = "https://www.google.com"; }, 1500);
                 } else {
-                    // REPLAY on clicking video
                     video.playbackRate = 1.0;
                     video.classList.remove("low-res");
                     video.currentTime = 0;
@@ -106,11 +103,10 @@
                 
                 let rng = Math.random();
                 
-                // Datamosh Trigger
                 if (rng > 0.96 && video.playbackRate === 1.0) {
                     video.classList.add("low-res");
-                    video.playbackRate = 0.1; // Extreme slow motion smear
-                    fpsNum.innerText = "2.4";
+                    video.playbackRate = 0.2; // Slow down for the smear effect
+                    fpsNum.innerText = (Math.random() * 4).toFixed(1);
                     fpsNum.style.color = "red";
                     
                     setTimeout(() => {
@@ -126,6 +122,5 @@
             }, 100);
         }
     </script>
-
 </body>
 </html>
